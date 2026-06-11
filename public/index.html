@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>flew.</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg: #f8f8f6; --surface: #fff; --border: #e8e8e4; --text: #1a1a18; --muted: #6b6b64; --accent: #4d9eff; --accent-light: #e6f1fb; --danger: #e33d2d; --success: #2db37a; --radius: 12px; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    nav { background: #0d1117; display: flex; align-items: center; padding: 0 28px; height: 54px; gap: 6px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .wordmark { font-size: 21px; font-weight: 700; color: #fff; letter-spacing: -0.5px; margin-right: 14px; cursor: pointer; flex-shrink: 0; }
+    .wordmark span { color: var(--accent); }
+    .nav-links { display: flex; gap: 2px; flex: 1; }
+    .nav-link { display: flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.5); cursor: pointer; border: none; background: none; font-family: inherit; transition: all 0.15s; }
+    .nav-link:hover { color: rgba(255,255,255,0.8); }
+    .nav-link.active { background: rgba(255,255,255,0.1); color: #fff; }
+    .profile-btn { width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; cursor: pointer; color: rgba(255,255,255,0.7); font-size: 18px; flex-shrink: 0; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .hero { background: #0d1117; color: #fff; padding: 60px 32px 50px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .hero-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; color: var(--accent); text-transform: uppercase; margin-bottom: 12px; }
+    .hero h1 { font-size: 36px; font-weight: 700; line-height: 1.1; margin-bottom: 12px; letter-spacing: -1px; }
+    .hero-sub { font-size: 14px; color: rgba(255,255,255,0.5); line-height: 1.6; max-width: 500px; margin-bottom: 24px; text-align: center; }
+    .stats-row { display: flex; margin-bottom: 24px; }
+    .stat { padding: 0 24px 0 0; border-right: 1px solid rgba(255,255,255,0.12); margin-right: 24px; }
+    .stat:last-child { border-right: none; }
+    .stat-num { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500; }
+    .stat-label { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+    .hero-search { display: flex; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 3px 3px 3px 14px; align-items: center; max-width: 540px; }
+    .hero-search input { background: transparent; border: none; outline: none; color: #fff; font-size: 14px; flex: 1; padding: 8px 0; font-family: inherit; }
+    .hero-search input::placeholder { color: rgba(255,255,255,0.3); }
+    .hero-search button { background: var(--accent); color: #fff; border: none; border-radius: 7px; padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .divider-line { height: 3px; background: linear-gradient(90deg, #4d9eff, #6c63ff, #4d9eff22); }
+    .two-panel { display: grid; grid-template-columns: 290px 1fr; min-height: calc(100vh - 280px); }
+    .left-panel { background: var(--surface); border-right: 1px solid var(--border); padding: 16px; overflow-y: auto; }
+    .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .panel-title { font-size: 13px; font-weight: 600; }
+    .sort-btn { font-size: 12px; color: var(--muted); background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-family: inherit; }
+    .flight-row { padding: 11px 10px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; transition: background 0.1s; }
+    .flight-row:hover, .flight-row.active { background: var(--bg); }
+    .flight-code { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; }
+    .flight-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .flight-right { text-align: right; flex-shrink: 0; }
+    .stars-sm { color: #f5a623; font-size: 12px; }
+    .rating-num { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; }
+    .review-ct { font-size: 10px; color: var(--muted); }
+    .right-panel { padding: 24px 28px; overflow-y: auto; }
+    .detail-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+    .detail-code { font-family: 'DM Mono', monospace; font-size: 28px; font-weight: 500; }
+    .detail-airline { color: var(--muted); font-size: 14px; margin-top: 4px; }
+    .detail-avg { font-family: 'DM Mono', monospace; font-size: 32px; font-weight: 500; }
+    .stars-lg { color: #f5a623; font-size: 20px; }
+    .sky-btn { display: block; background: #00a4ff; color: #fff; border: none; border-radius: var(--radius); padding: 12px 16px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; margin-bottom: 16px; text-align: center; text-decoration: none; }
+    .section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 12px; }
+    .review-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; }
+    .review-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .review-comment { font-size: 14px; line-height: 1.5; }
+    .review-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+    .review-tag { padding: 2px 9px; border-radius: 20px; font-size: 11px; background: var(--bg); color: var(--muted); }
+    .add-review-btn { display: flex; align-items: center; gap: 6px; padding: 10px 18px; border: 1.5px solid var(--accent); border-radius: var(--radius); color: var(--accent); font-size: 14px; font-weight: 600; background: transparent; cursor: pointer; font-family: inherit; margin-bottom: 16px; }
+    .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 16px; }
+    .form-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); display: block; margin-bottom: 6px; }
+    .form-group { margin-bottom: 14px; }
+    .star-inp { font-size: 26px; color: #d4d4cc; cursor: pointer; transition: color 0.1s; }
+    .star-inp.filled { color: #f5a623; }
+    .tags-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag-opt { padding: 5px 11px; border-radius: 20px; font-size: 12px; font-weight: 500; background: var(--bg); color: var(--muted); cursor: pointer; border: 1.5px solid transparent; }
+    .tag-opt.selected { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+    textarea { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 14px; resize: vertical; min-height: 80px; outline: none; background: var(--surface); }
+    textarea:focus { border-color: var(--accent); }
+    .submit-btn { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+    .msg { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 12px; display: none; }
+    .msg.success { background: #edfaf4; color: var(--success); display: block; }
+    .msg.error { background: #fdf0ee; color: var(--danger); display: block; }
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 300px; gap: 12px; }
+    .empty-icon { width: 50px; height: 50px; border-radius: 50%; background: var(--bg); display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 22px; }
+    .empty-text { font-size: 14px; color: var(--muted); }
+    .page-hero { background: #0d1117; color: #fff; padding: 24px 32px; }
+    .page-hero h2 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
+    .page-hero p { font-size: 13px; color: rgba(255,255,255,0.5); }
+    .feed-wrap { background: var(--bg); min-height: calc(100vh - 200px); padding-bottom: 32px; }
+    .feed { max-width: 540px; margin: 0 auto; padding: 20px 16px; }
+    .feed-actions-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+    .action-pill { display: flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 24px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; }
+    .action-pill.checkin { background: #0d1117; color: #fff; }
+    .action-pill.write { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    .feed-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+    .feed-user { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+    .av1 { background: #e6f1fb; color: #185fa5; }
+    .av2 { background: #eaf3de; color: #3b6d11; }
+    .av3 { background: #faeeda; color: #854f0b; }
+    .av4 { background: #fbeaf0; color: #993556; }
+    .feed-username { font-size: 14px; font-weight: 600; }
+    .feed-meta { font-size: 12px; color: var(--muted); margin-top: 1px; }
+    .flight-badge { background: var(--bg); border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; }
+    .badge-code { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; }
+    .badge-route { font-size: 12px; color: var(--muted); }
+    .checkin-pill { display: inline-flex; align-items: center; gap: 4px; background: var(--accent-light); color: #185fa5; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; margin-bottom: 8px; }
+    .feed-stars { color: #f5a623; font-size: 15px; margin-bottom: 6px; }
+    .feed-comment { font-size: 14px; line-height: 1.5; }
+    .feed-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+    .feed-tag { padding: 3px 9px; border-radius: 20px; font-size: 11px; background: var(--bg); color: var(--muted); }
+    .card-actions { display: flex; gap: 16px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
+    .card-action { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); cursor: pointer; background: none; border: none; font-family: inherit; }
+    .tr-body { background: var(--bg); min-height: calc(100vh - 200px); padding: 20px 24px 32px; }
+    .mode-toggle { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 3px; margin-bottom: 14px; gap: 2px; }
+    .mode-btn { flex: 1; padding: 8px 12px; border-radius: 8px; border: none; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--muted); background: transparent; }
+    .mode-btn.active { background: #0d1117; color: #fff; }
+    .filter-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
+    .filter-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .filter-row2 { display: grid; grid-template-columns: 1fr 20px 1fr; gap: 8px; align-items: end; margin-bottom: 12px; }
+    .filter-row2b { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .f-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); display: block; margin-bottom: 5px; }
+    .f-input, select { width: 100%; padding: 9px 10px; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; font-size: 13px; background: var(--bg); color: var(--text); outline: none; }
+    .rt-div { text-align: center; color: var(--muted); font-size: 16px; padding-bottom: 2px; }
+    .tr-search-btn { width: 100%; padding: 11px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .results-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .results-title { font-size: 13px; font-weight: 600; }
+    .results-count { font-size: 12px; color: var(--muted); }
+    .flight-result { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+    .flight-result:hover { background: var(--bg); }
+    .result-left { display: flex; align-items: center; gap: 12px; }
+    .rank { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted); width: 22px; }
+    .result-code { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; }
+    .result-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .result-right { text-align: right; }
+    .result-stars { color: #f5a623; font-size: 13px; }
+    .result-rating { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; }
+    .result-count { font-size: 11px; color: var(--muted); }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<nav>
+  <div class="wordmark" onclick="goTo('home')">flew<span>.</span></div>
+  <div class="nav-links">
+    <button class="nav-link" id="nav-explore" onclick="goTo('explore')"><i class="ti ti-compass"></i> Explore</button>
+    <button class="nav-link" id="nav-toprated" onclick="goTo('toprated')"><i class="ti ti-star"></i> Top rated</button>
+  </div>
+  <div class="profile-btn"><i class="ti ti-user"></i></div>
+</nav>
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-eyebrow">Honest reviews · Real passengers</div>
+    <h1>How was your flight?</h1>
+    <p class="hero-sub">From dream seats to long delays — every experience, honestly rated by people who were actually there.</p>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-num" id="stat-reviews">—</div><div class="stat-label">reviews written</div></div>
+      <div class="stat"><div class="stat-num" id="stat-flights">—</div><div class="stat-label">flights tracked</div></div>
+      <div class="stat"><div class="stat-num" id="stat-avg">—</div><div class="stat-label">avg rating</div></div>
+    </div>
+    <div class="hero-search">
+      <i class="ti ti-search" style="color:rgba(255,255,255,0.3);font-size:16px;margin-right:8px"></i>
+      <input type="text" id="hero-input" placeholder="Search a flight number, e.g. AA2031" onkeydown="if(event.key==='Enter')searchFlight()">
+      <button onclick="searchFlight()">Search</button>
+    </div>
+  </div>
+  <div class="divider-line"></div>
+  <div class="two-panel">
+    <div class="left-panel">
+      <div class="panel-header">
+        <span class="panel-title">Top-rated flights</span>
+        <button class="sort-btn">Most reviewed</button>
+      </div>
+      <div id="flight-list"></div>
+    </div>
+    <div class="right-panel" id="right-panel">
+      <div class="empty-state">
+        <div class="empty-icon"><i class="ti ti-plane"></i></div>
+        <div class="empty-text">Select a flight to read reviews</div>
+        <button class="add-review-btn" onclick="showReviewForm(null)"><i class="ti ti-edit"></i> Review a flight you took</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="page" id="page-explore">
+  <div class="page-hero">
+    <h2>Explore</h2>
+    <p>See what other passengers are experiencing right now</p>
+  </div>
+  <div class="divider-line"></div>
+  <div class="feed-wrap">
+    <div class="feed">
+      <div class="feed-actions-bar">
+        <button class="action-pill checkin"><i class="ti ti-map-pin"></i> Check in to a flight</button>
+        <button class="action-pill write"><i class="ti ti-edit"></i> Write a review</button>
+      </div>
+      <div id="explore-feed"></div>
+    </div>
+  </div>
+</div>
+<div class="page" id="page-toprated">
+  <div class="page-hero">
+    <h2>Top rated</h2>
+    <p>Find the best-reviewed flights by route, region, or flight number</p>
+  </div>
+  <div class="divider-line"></div>
+  <div class="tr-body">
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="mbtn-a" onclick="switchMode('a')"><i class="ti ti-map" style="font-size:14px;vertical-align:-2px;margin-right:4px"></i> Find best flights for a route</button>
+      <button class="mode-btn" id="mbtn-b" onclick="switchMode('b')"><i class="ti ti-barcode" style="font-size:14px;vertical-align:-2px;margin-right:4px"></i> Look up my flight</button>
+    </div>
+    <div class="filter-card" id="fb-a">
+      <div class="filter-row3">
+        <div><label class="f-label">Country</label><select id="tr-country"><option>United States</option><option>United Kingdom</option><option>Canada</option><option>Australia</option><option>Japan</option><option>Other</option></select></div>
+        <div><label class="f-label">State / Region</label><select id="tr-region"><option value="">All regions</option><option>Northeast</option><option>West Coast</option><option>Midwest</option><option>South</option><option>International</option></select></div>
+        <div><label class="f-label">Airline</label><select id="tr-airline"><option value="">All airlines</option><option>American Airlines</option><option>Delta Air Lines</option><option>United Airlines</option><option>Southwest Airlines</option><option>JetBlue</option><option>Alaska Airlines</option><option>Emirates</option><option>British Airways</option><option>Lufthansa</option></select></div>
+      </div>
+      <div class="filter-row2">
+        <div><label class="f-label">From</label><input class="f-input" id="tr-from" type="text" placeholder="City, e.g. New York"></div>
+        <div class="rt-div">→</div>
+        <div><label class="f-label">To</label><input class="f-input" id="tr-to" type="text" placeholder="City, e.g. Los Angeles"></div>
+      </div>
+      <button class="tr-search-btn" onclick="searchTopRated()">Find top-rated flights</button>
+    </div>
+    <div class="filter-card hidden" id="fb-b">
+      <div class="filter-row2b">
+        <div><label class="f-label">Flight number</label><input class="f-input" id="tr-flightnum" type="text" placeholder="e.g. AA2031"></div>
+        <div>
+          <label class="f-label">Airport codes</label>
+          <div style="display:grid;grid-template-columns:1fr 18px 1fr;gap:6px;align-items:center">
+            <input class="f-input" id="tr-from-code" type="text" placeholder="JFK" style="text-transform:uppercase">
+            <div class="rt-div">→</div>
+            <input class="f-input" id="tr-to-code" type="text" placeholder="LAX" style="text-transform:uppercase">
+          </div>
+        </div>
+      </div>
+      <button class="tr-search-btn" onclick="lookupFlight()">Look up flight reviews</button>
+    </div>
+    <div class="results-hdr">
+      <div class="results-title">Top rated flights</div>
+      <div class="results-count" id="tr-count"></div>
+    </div>
+    <div id="tr-results"></div>
+  </div>
+</div>
+<script>
+const TAGS = ['On time','Delayed','Great crew','Rude crew','Comfortable','Cramped','Good food','Bad food','Clean','Dirty','Smooth landing','Rough landing','Good entertainment','No wifi'];
+let currentFlight = '';
+let selectedTags = [];
+let selectedRating = 0;
+
+function goTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  if (document.getElementById('nav-' + page)) document.getElementById('nav-' + page).classList.add('active');
+  if (page === 'explore') loadExploreFeed();
+  if (page === 'toprated') loadTopRated();
+}
+
+function switchMode(m) {
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('mbtn-' + m).classList.add('active');
+  document.getElementById('fb-a').classList.toggle('hidden', m !== 'a');
+  document.getElementById('fb-b').classList.toggle('hidden', m !== 'b');
+}
+
+function starsStr(n) { return '★'.repeat(n) + '☆'.repeat(5 - n); }
+
+function timeAgo(dt) {
+  const diff = (Date.now() - new Date(dt)) / 1000;
+  if (diff < 60) return 'Just now';
+  if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+  return Math.floor(diff / 86400) + 'd ago';
+}
+
+async function loadStats() {
+  try {
+    const res = await fetch('/api/stats');
+    const d = await res.json();
+    document.getElementById('stat-reviews').textContent = d.reviews || '—';
+    document.getElementById('stat-flights').textContent = d.flights || '—';
+    document.getElementById('stat-avg').textContent = d.avg ? parseFloat(d.avg).toFixed(1) : '—';
+  } catch(e) {}
+}
+
+async function loadFlightList() {
+  const res = await fetch('/api/top');
+  const data = await res.json();
+  const el = document.getElementById('flight-list');
+  if (!data.length) { el.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px">No reviews yet — be the first!</div>'; return; }
+  el.innerHTML = data.map(f => `
+    <div class="flight-row" onclick="selectFlight('${f.flight_number}', this)">
+      <div>
+        <div class="flight-code">${f.flight_number}</div>
+        <div class="flight-sub">${f.airline}</div>
+        <div class="flight-sub">${f.review_count} review${f.review_count !== 1 ? 's' : ''}</div>
+      </div>
+      <div class="flight-right">
+        <div class="stars-sm">${starsStr(Math.round(f.avg_rating))}</div>
+        <div class="rating-num">${parseFloat(f.avg_rating).toFixed(1)}</div>
+      </div>
+    </div>`).join('');
+}
+
+async function selectFlight(flight, el) {
+  document.querySelectorAll('.flight-row').forEach(r => r.classList.remove('active'));
+  if (el) el.classList.add('active');
+  currentFlight = flight;
+  document.getElementById('hero-input').value = flight;
+  await renderFlightDetail(flight);
+}
+
+async function searchFlight() {
+  const q = document.getElementById('hero-input').value.trim().toUpperCase().replace(/\s/g, '');
+  if (!q) return;
+  currentFlight = q;
+  await renderFlightDetail(q);
+}
+
+async function renderFlightDetail(flight) {
+  const res = await fetch('/api/reviews/' + flight);
+  const data = await res.json();
+  const avg = data.reviews.length ? (data.reviews.reduce((s, r) => s + r.rating, 0) / data.reviews.length).toFixed(1) : null;
+  document.getElementById('right-panel').innerHTML = `
+    <div>
+      <div class="detail-header">
+        <div>
+          <div class="detail-code">${data.flight}</div>
+          <div class="detail-airline">${data.airline}</div>
+        </div>
+        <div style="text-align:right">
+          ${avg ? `<div class="detail-avg">${avg}</div><div class="stars-lg">${starsStr(Math.round(avg))}</div>` : '<div style="color:var(--muted);font-size:13px">No ratings yet</div>'}
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">${data.reviews.length} review${data.reviews.length !== 1 ? 's' : ''}</div>
+        </div>
+      </div>
+      <a class="sky-btn" href="https://www.skyscanner.com/flights/${data.flight}" target="_blank">Search flights on Skyscanner</a>
+      <button class="add-review-btn" onclick="showReviewForm('${data.flight}')"><i class="ti ti-edit"></i> Add your review</button>
+      <div id="form-area"></div>
+      <div class="section-label">${data.reviews.length ? 'Reviews' : 'No reviews yet'}</div>
+      ${data.reviews.map(r => `
+        <div class="review-card">
+          <div class="review-meta">
+            <span class="stars-sm">${starsStr(r.rating)}</span>
+            <span style="font-size:12px;color:var(--muted)">${new Date(r.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span>
+          </div>
+          ${r.comment ? `<div class="review-comment">${r.comment}</div>` : ''}
+          ${r.tags && JSON.parse(r.tags).length ? `<div class="review-tags">${JSON.parse(r.tags).map(t => `<span class="review-tag">${t}</span>`).join('')}</div>` : ''}
+        </div>`).join('')}
+    </div>`;
+}
+
+function showReviewForm(flight) {
+  if (flight) currentFlight = flight;
+  if (!currentFlight) { alert('Search for a flight first.'); return; }
+  selectedRating = 0; selectedTags = [];
+  document.getElementById('form-area').innerHTML = `
+    <div class="form-card">
+      <div class="section-label" style="margin-bottom:14px">Your review — ${currentFlight}</div>
+      <div id="msg" class="msg"></div>
+      <div class="form-group">
+        <label class="form-label">Rating</label>
+        <div>${[1,2,3,4,5].map(i => `<span class="star-inp" onclick="setRating(${i})" id="si${i}">★</span>`).join('')}</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tags</label>
+        <div class="tags-wrap">${TAGS.map(t => `<span class="tag-opt" onclick="toggleTag(this,'${t}')">${t}</span>`).join('')}</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Comment (optional)</label>
+        <textarea id="rev-comment" placeholder="What was your experience like?"></textarea>
+      </div>
+      <button class="submit-btn" onclick="submitReview()">Submit review</button>
+    </div>`;
+}
+
+function setRating(r) {
+  selectedRating = r;
+  [1,2,3,4,5].forEach(i => document.getElementById('si'+i).classList.toggle('filled', i <= r));
+}
+
+function toggleTag(el, tag) {
+  el.classList.toggle('selected');
+  selectedTags = el.classList.contains('selected') ? [...selectedTags, tag] : selectedTags.filter(t => t !== tag);
+}
+
+async function submitReview() {
+  const comment = document.getElementById('rev-comment').value.trim();
+  const msg = document.getElementById('msg');
+  if (!selectedRating) { msg.className = 'msg error'; msg.textContent = 'Please select a rating.'; return; }
+  const res = await fetch('/api/reviews', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({flight_number: currentFlight, rating: selectedRating, comment, tags: selectedTags})
+  });
+  if (res.ok) {
+    msg.className = 'msg success'; msg.textContent = 'Review submitted!';
+    setTimeout(() => { renderFlightDetail(currentFlight); loadFlightList(); loadStats(); }, 1200);
+  } else { msg.className = 'msg error'; msg.textContent = 'Something went wrong. Try again.'; }
+}
+
+async function loadExploreFeed() {
+  const res = await fetch('/api/feed');
+  const data = await res.json();
+  const el = document.getElementById('explore-feed');
+  const colors = ['av1','av2','av3','av4'];
+  if (!data.length) { el.innerHTML = '<div style="color:var(--muted);font-size:14px;text-align:center;padding:40px 0">No activity yet — check in or write a review!</div>'; return; }
+  el.innerHTML = data.map((item, idx) => {
+    const initials = (item.username || 'AN').substring(0,2).toUpperCase();
+    const av = colors[idx % colors.length];
+    const time = timeAgo(item.created_at);
+    if (item.type === 'checkin') {
+      return `<div class="feed-card">
+        <div class="feed-user"><div class="avatar ${av}">${initials}</div><div><div class="feed-username">${item.username || 'Anonymous'}</div><div class="feed-meta">${time}</div></div></div>
+        <span class="checkin-pill"><i class="ti ti-map-pin" style="font-size:11px"></i> Checked in</span>
+        <div class="flight-badge"><div class="badge-code">${item.flight_number}</div><div class="badge-route">${item.airline}</div></div>
+        <div class="feed-comment" style="color:var(--muted);font-size:13px">Someone just checked into this flight.</div>
+        <div class="card-actions"><button class="card-action"><i class="ti ti-message" style="font-size:14px"></i> Ask them</button><button class="card-action"><i class="ti ti-thumb-up" style="font-size:14px"></i> Cheer them on</button></div>
+      </div>`;
+    } else {
+      const tags = item.tags ? JSON.parse(item.tags) : [];
+      return `<div class="feed-card">
+        <div class="feed-user"><div class="avatar ${av}">${initials}</div><div><div class="feed-username">${item.username || 'Anonymous'}</div><div class="feed-meta">${time}</div></div></div>
+        <div class="flight-badge"><div class="badge-code">${item.flight_number}</div><div class="badge-route">${item.airline}</div></div>
+        <div class="feed-stars">${starsStr(item.rating)}</div>
+        ${item.comment ? `<div class="feed-comment">${item.comment}</div>` : ''}
+        ${tags.length ? `<div class="feed-tags">${tags.map(t => `<span class="feed-tag">${t}</span>`).join('')}</div>` : ''}
+        <div class="card-actions"><button class="card-action"><i class="ti ti-thumb-up" style="font-size:14px"></i> Helpful</button><button class="card-action"><i class="ti ti-message" style="font-size:14px"></i> Comment</button></div>
+      </div>`;
+    }
+  }).join('');
+}
+
+async function loadTopRated() {
+  const res = await fetch('/api/top');
+  const data = await res.json();
+  renderTRResults(data);
+}
+
+async function searchTopRated() {
+  const params = new URLSearchParams({
+    from: document.getElementById('tr-from').value,
+    to: document.getElementById('tr-to').value,
+    airline: document.getElementById('tr-airline').value,
+    region: document.getElementById('tr-region').value
+  });
+  const res = await fetch('/api/top?' + params);
+  const data = await res.json();
+  renderTRResults(data);
+}
+
+async function lookupFlight() {
+  const num = document.getElementById('tr-flightnum').value.trim().toUpperCase().replace(/\s/g,'');
+  const from = document.getElementById('tr-from-code').value.trim().toUpperCase();
+  const to = document.getElementById('tr-to-code').value.trim().toUpperCase();
+  const q = num || (from && to ? from + to : '');
+  if (!q) return;
+  const res = await fetch('/api/top?q=' + q);
+  const data = await res.json();
+  renderTRResults(data);
+}
+
+function renderTRResults(data) {
+  document.getElementById('tr-count').textContent = data.length + ' result' + (data.length !== 1 ? 's' : '');
+  document.getElementById('tr-results').innerHTML = data.length ? data.map((f, i) => `
+    <div class="flight-result" onclick="goHomeAndSelect('${f.flight_number}')">
+      <div class="result-left">
+        <div class="rank">#${i+1}</div>
+        <div><div class="result-code">${f.flight_number}</div><div class="result-sub">${f.airline}</div></div>
+      </div>
+      <div class="result-right">
+        <div class="result-stars">${starsStr(Math.round(f.avg_rating))}</div>
+        <div class="result-rating">${parseFloat(f.avg_rating).toFixed(1)}</div>
+        <div class="result-count">${f.review_count} review${f.review_count !== 1 ? 's' : ''}</div>
+      </div>
+    </div>`).join('') : '<div style="color:var(--muted);font-size:13px;text-align:center;padding:32px 0">No flights found. Try adjusting your search.</div>';
+}
+
+function goHomeAndSelect(flight) {
+  goTo('home');
+  setTimeout(() => selectFlight(flight, null), 100);
+}
+
+loadStats();
+loadFlightList();
+</script>
+</body>
+</html>
+HTMLEOFcat > ~/flew/public/index.html << 'HTMLEOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>flew.</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg: #f8f8f6; --surface: #fff; --border: #e8e8e4; --text: #1a1a18; --muted: #6b6b64; --accent: #4d9eff; --accent-light: #e6f1fb; --danger: #e33d2d; --success: #2db37a; --radius: 12px; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    nav { background: #0d1117; display: flex; align-items: center; padding: 0 28px; height: 54px; gap: 6px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .wordmark { font-size: 21px; font-weight: 700; color: #fff; letter-spacing: -0.5px; margin-right: 14px; cursor: pointer; flex-shrink: 0; }
+    .wordmark span { color: var(--accent); }
+    .nav-links { display: flex; gap: 2px; flex: 1; }
+    .nav-link { display: flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.5); cursor: pointer; border: none; background: none; font-family: inherit; transition: all 0.15s; }
+    .nav-link:hover { color: rgba(255,255,255,0.8); }
+    .nav-link.active { background: rgba(255,255,255,0.1); color: #fff; }
+    .profile-btn { width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; cursor: pointer; color: rgba(255,255,255,0.7); font-size: 18px; flex-shrink: 0; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .hero { background: #0d1117; color: #fff; padding: 60px 32px 50px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .hero-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; color: var(--accent); text-transform: uppercase; margin-bottom: 12px; }
+    .hero h1 { font-size: 36px; font-weight: 700; line-height: 1.1; margin-bottom: 12px; letter-spacing: -1px; }
+    .hero-sub { font-size: 14px; color: rgba(255,255,255,0.5); line-height: 1.6; max-width: 500px; margin-bottom: 24px; text-align: center; }
+    .stats-row { display: flex; margin-bottom: 24px; }
+    .stat { padding: 0 24px 0 0; border-right: 1px solid rgba(255,255,255,0.12); margin-right: 24px; }
+    .stat:last-child { border-right: none; }
+    .stat-num { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500; }
+    .stat-label { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+    .hero-search { display: flex; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 3px 3px 3px 14px; align-items: center; max-width: 540px; }
+    .hero-search input { background: transparent; border: none; outline: none; color: #fff; font-size: 14px; flex: 1; padding: 8px 0; font-family: inherit; }
+    .hero-search input::placeholder { color: rgba(255,255,255,0.3); }
+    .hero-search button { background: var(--accent); color: #fff; border: none; border-radius: 7px; padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .divider-line { height: 3px; background: linear-gradient(90deg, #4d9eff, #6c63ff, #4d9eff22); }
+    .two-panel { display: grid; grid-template-columns: 290px 1fr; min-height: calc(100vh - 280px); }
+    .left-panel { background: var(--surface); border-right: 1px solid var(--border); padding: 16px; overflow-y: auto; }
+    .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .panel-title { font-size: 13px; font-weight: 600; }
+    .sort-btn { font-size: 12px; color: var(--muted); background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-family: inherit; }
+    .flight-row { padding: 11px 10px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; transition: background 0.1s; }
+    .flight-row:hover, .flight-row.active { background: var(--bg); }
+    .flight-code { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; }
+    .flight-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .flight-right { text-align: right; flex-shrink: 0; }
+    .stars-sm { color: #f5a623; font-size: 12px; }
+    .rating-num { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; }
+    .review-ct { font-size: 10px; color: var(--muted); }
+    .right-panel { padding: 24px 28px; overflow-y: auto; }
+    .detail-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+    .detail-code { font-family: 'DM Mono', monospace; font-size: 28px; font-weight: 500; }
+    .detail-airline { color: var(--muted); font-size: 14px; margin-top: 4px; }
+    .detail-avg { font-family: 'DM Mono', monospace; font-size: 32px; font-weight: 500; }
+    .stars-lg { color: #f5a623; font-size: 20px; }
+    .sky-btn { display: block; background: #00a4ff; color: #fff; border: none; border-radius: var(--radius); padding: 12px 16px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; margin-bottom: 16px; text-align: center; text-decoration: none; }
+    .section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 12px; }
+    .review-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; }
+    .review-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .review-comment { font-size: 14px; line-height: 1.5; }
+    .review-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+    .review-tag { padding: 2px 9px; border-radius: 20px; font-size: 11px; background: var(--bg); color: var(--muted); }
+    .add-review-btn { display: flex; align-items: center; gap: 6px; padding: 10px 18px; border: 1.5px solid var(--accent); border-radius: var(--radius); color: var(--accent); font-size: 14px; font-weight: 600; background: transparent; cursor: pointer; font-family: inherit; margin-bottom: 16px; }
+    .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 16px; }
+    .form-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); display: block; margin-bottom: 6px; }
+    .form-group { margin-bottom: 14px; }
+    .star-inp { font-size: 26px; color: #d4d4cc; cursor: pointer; transition: color 0.1s; }
+    .star-inp.filled { color: #f5a623; }
+    .tags-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag-opt { padding: 5px 11px; border-radius: 20px; font-size: 12px; font-weight: 500; background: var(--bg); color: var(--muted); cursor: pointer; border: 1.5px solid transparent; }
+    .tag-opt.selected { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+    textarea { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 14px; resize: vertical; min-height: 80px; outline: none; background: var(--surface); }
+    textarea:focus { border-color: var(--accent); }
+    .submit-btn { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+    .msg { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 12px; display: none; }
+    .msg.success { background: #edfaf4; color: var(--success); display: block; }
+    .msg.error { background: #fdf0ee; color: var(--danger); display: block; }
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 300px; gap: 12px; }
+    .empty-icon { width: 50px; height: 50px; border-radius: 50%; background: var(--bg); display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 22px; }
+    .empty-text { font-size: 14px; color: var(--muted); }
+    .page-hero { background: #0d1117; color: #fff; padding: 24px 32px; }
+    .page-hero h2 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
+    .page-hero p { font-size: 13px; color: rgba(255,255,255,0.5); }
+    .feed-wrap { background: var(--bg); min-height: calc(100vh - 200px); padding-bottom: 32px; }
+    .feed { max-width: 540px; margin: 0 auto; padding: 20px 16px; }
+    .feed-actions-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+    .action-pill { display: flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 24px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; }
+    .action-pill.checkin { background: #0d1117; color: #fff; }
+    .action-pill.write { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    .feed-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+    .feed-user { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+    .av1 { background: #e6f1fb; color: #185fa5; }
+    .av2 { background: #eaf3de; color: #3b6d11; }
+    .av3 { background: #faeeda; color: #854f0b; }
+    .av4 { background: #fbeaf0; color: #993556; }
+    .feed-username { font-size: 14px; font-weight: 600; }
+    .feed-meta { font-size: 12px; color: var(--muted); margin-top: 1px; }
+    .flight-badge { background: var(--bg); border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; }
+    .badge-code { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; }
+    .badge-route { font-size: 12px; color: var(--muted); }
+    .checkin-pill { display: inline-flex; align-items: center; gap: 4px; background: var(--accent-light); color: #185fa5; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; margin-bottom: 8px; }
+    .feed-stars { color: #f5a623; font-size: 15px; margin-bottom: 6px; }
+    .feed-comment { font-size: 14px; line-height: 1.5; }
+    .feed-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+    .feed-tag { padding: 3px 9px; border-radius: 20px; font-size: 11px; background: var(--bg); color: var(--muted); }
+    .card-actions { display: flex; gap: 16px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
+    .card-action { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); cursor: pointer; background: none; border: none; font-family: inherit; }
+    .tr-body { background: var(--bg); min-height: calc(100vh - 200px); padding: 20px 24px 32px; }
+    .mode-toggle { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 3px; margin-bottom: 14px; gap: 2px; }
+    .mode-btn { flex: 1; padding: 8px 12px; border-radius: 8px; border: none; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--muted); background: transparent; }
+    .mode-btn.active { background: #0d1117; color: #fff; }
+    .filter-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
+    .filter-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .filter-row2 { display: grid; grid-template-columns: 1fr 20px 1fr; gap: 8px; align-items: end; margin-bottom: 12px; }
+    .filter-row2b { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .f-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); display: block; margin-bottom: 5px; }
+    .f-input, select { width: 100%; padding: 9px 10px; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; font-size: 13px; background: var(--bg); color: var(--text); outline: none; }
+    .rt-div { text-align: center; color: var(--muted); font-size: 16px; padding-bottom: 2px; }
+    .tr-search-btn { width: 100%; padding: 11px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .results-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .results-title { font-size: 13px; font-weight: 600; }
+    .results-count { font-size: 12px; color: var(--muted); }
+    .flight-result { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+    .flight-result:hover { background: var(--bg); }
+    .result-left { display: flex; align-items: center; gap: 12px; }
+    .rank { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted); width: 22px; }
+    .result-code { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; }
+    .result-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .result-right { text-align: right; }
+    .result-stars { color: #f5a623; font-size: 13px; }
+    .result-rating { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; }
+    .result-count { font-size: 11px; color: var(--muted); }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<nav>
+  <div class="wordmark" onclick="goTo('home')">flew<span>.</span></div>
+  <div class="nav-links">
+    <button class="nav-link" id="nav-explore" onclick="goTo('explore')"><i class="ti ti-compass"></i> Explore</button>
+    <button class="nav-link" id="nav-toprated" onclick="goTo('toprated')"><i class="ti ti-star"></i> Top rated</button>
+  </div>
+  <div class="profile-btn"><i class="ti ti-user"></i></div>
+</nav>
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-eyebrow">Honest reviews · Real passengers</div>
+    <h1>How was your flight?</h1>
+    <p class="hero-sub">From dream seats to long delays — every experience, honestly rated by people who were actually there.</p>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-num" id="stat-reviews">—</div><div class="stat-label">reviews written</div></div>
+      <div class="stat"><div class="stat-num" id="stat-flights">—</div><div class="stat-label">flights tracked</div></div>
+      <div class="stat"><div class="stat-num" id="stat-avg">—</div><div class="stat-label">avg rating</div></div>
+    </div>
+    <div class="hero-search">
+      <i class="ti ti-search" style="color:rgba(255,255,255,0.3);font-size:16px;margin-right:8px"></i>
+      <input type="text" id="hero-input" placeholder="Search a flight number, e.g. AA2031" onkeydown="if(event.key==='Enter')searchFlight()">
+      <button onclick="searchFlight()">Search</button>
+    </div>
+  </div>
+  <div class="divider-line"></div>
+  <div class="two-panel">
+    <div class="left-panel">
+      <div class="panel-header">
+        <span class="panel-title">Top-rated flights</span>
+        <button class="sort-btn">Most reviewed</button>
+      </div>
+      <div id="flight-list"></div>
+    </div>
+    <div class="right-panel" id="right-panel">
+      <div class="empty-state">
+        <div class="empty-icon"><i class="ti ti-plane"></i></div>
+        <div class="empty-text">Select a flight to read reviews</div>
+        <button class="add-review-btn" onclick="showReviewForm(null)"><i class="ti ti-edit"></i> Review a flight you took</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="page" id="page-explore">
+  <div class="page-hero">
+    <h2>Explore</h2>
+    <p>See what other passengers are experiencing right now</p>
+  </div>
+  <div class="divider-line"></div>
+  <div class="feed-wrap">
+    <div class="feed">
+      <div class="feed-actions-bar">
+        <button class="action-pill checkin"><i class="ti ti-map-pin"></i> Check in to a flight</button>
+        <button class="action-pill write"><i class="ti ti-edit"></i> Write a review</button>
+      </div>
+      <div id="explore-feed"></div>
+    </div>
+  </div>
+</div>
+<div class="page" id="page-toprated">
+  <div class="page-hero">
+    <h2>Top rated</h2>
+    <p>Find the best-reviewed flights by route, region, or flight number</p>
+  </div>
+  <div class="divider-line"></div>
+  <div class="tr-body">
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="mbtn-a" onclick="switchMode('a')"><i class="ti ti-map" style="font-size:14px;vertical-align:-2px;margin-right:4px"></i> Find best flights for a route</button>
+      <button class="mode-btn" id="mbtn-b" onclick="switchMode('b')"><i class="ti ti-barcode" style="font-size:14px;vertical-align:-2px;margin-right:4px"></i> Look up my flight</button>
+    </div>
+    <div class="filter-card" id="fb-a">
+      <div class="filter-row3">
+        <div><label class="f-label">Country</label><select id="tr-country"><option>United States</option><option>United Kingdom</option><option>Canada</option><option>Australia</option><option>Japan</option><option>Other</option></select></div>
+        <div><label class="f-label">State / Region</label><select id="tr-region"><option value="">All regions</option><option>Northeast</option><option>West Coast</option><option>Midwest</option><option>South</option><option>International</option></select></div>
+        <div><label class="f-label">Airline</label><select id="tr-airline"><option value="">All airlines</option><option>American Airlines</option><option>Delta Air Lines</option><option>United Airlines</option><option>Southwest Airlines</option><option>JetBlue</option><option>Alaska Airlines</option><option>Emirates</option><option>British Airways</option><option>Lufthansa</option></select></div>
+      </div>
+      <div class="filter-row2">
+        <div><label class="f-label">From</label><input class="f-input" id="tr-from" type="text" placeholder="City, e.g. New York"></div>
+        <div class="rt-div">→</div>
+        <div><label class="f-label">To</label><input class="f-input" id="tr-to" type="text" placeholder="City, e.g. Los Angeles"></div>
+      </div>
+      <button class="tr-search-btn" onclick="searchTopRated()">Find top-rated flights</button>
+    </div>
+    <div class="filter-card hidden" id="fb-b">
+      <div class="filter-row2b">
+        <div><label class="f-label">Flight number</label><input class="f-input" id="tr-flightnum" type="text" placeholder="e.g. AA2031"></div>
+        <div>
+          <label class="f-label">Airport codes</label>
+          <div style="display:grid;grid-template-columns:1fr 18px 1fr;gap:6px;align-items:center">
+            <input class="f-input" id="tr-from-code" type="text" placeholder="JFK" style="text-transform:uppercase">
+            <div class="rt-div">→</div>
+            <input class="f-input" id="tr-to-code" type="text" placeholder="LAX" style="text-transform:uppercase">
+          </div>
+        </div>
+      </div>
+      <button class="tr-search-btn" onclick="lookupFlight()">Look up flight reviews</button>
+    </div>
+    <div class="results-hdr">
+      <div class="results-title">Top rated flights</div>
+      <div class="results-count" id="tr-count"></div>
+    </div>
+    <div id="tr-results"></div>
+  </div>
+</div>
+<script>
+const TAGS = ['On time','Delayed','Great crew','Rude crew','Comfortable','Cramped','Good food','Bad food','Clean','Dirty','Smooth landing','Rough landing','Good entertainment','No wifi'];
+let currentFlight = '';
+let selectedTags = [];
+let selectedRating = 0;
+
+function goTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  if (document.getElementById('nav-' + page)) document.getElementById('nav-' + page).classList.add('active');
+  if (page === 'explore') loadExploreFeed();
+  if (page === 'toprated') loadTopRated();
+}
+
+function switchMode(m) {
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('mbtn-' + m).classList.add('active');
+  document.getElementById('fb-a').classList.toggle('hidden', m !== 'a');
+  document.getElementById('fb-b').classList.toggle('hidden', m !== 'b');
+}
+
+function starsStr(n) { return '★'.repeat(n) + '☆'.repeat(5 - n); }
+
+function timeAgo(dt) {
+  const diff = (Date.now() - new Date(dt)) / 1000;
+  if (diff < 60) return 'Just now';
+  if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+  return Math.floor(diff / 86400) + 'd ago';
+}
+
+async function loadStats() {
+  try {
+    const res = await fetch('/api/stats');
+    const d = await res.json();
+    document.getElementById('stat-reviews').textContent = d.reviews || '—';
+    document.getElementById('stat-flights').textContent = d.flights || '—';
+    document.getElementById('stat-avg').textContent = d.avg ? parseFloat(d.avg).toFixed(1) : '—';
+  } catch(e) {}
+}
+
+async function loadFlightList() {
+  const res = await fetch('/api/top');
+  const data = await res.json();
+  const el = document.getElementById('flight-list');
+  if (!data.length) { el.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px">No reviews yet — be the first!</div>'; return; }
+  el.innerHTML = data.map(f => `
+    <div class="flight-row" onclick="selectFlight('${f.flight_number}', this)">
+      <div>
+        <div class="flight-code">${f.flight_number}</div>
+        <div class="flight-sub">${f.airline}</div>
+        <div class="flight-sub">${f.review_count} review${f.review_count !== 1 ? 's' : ''}</div>
+      </div>
+      <div class="flight-right">
+        <div class="stars-sm">${starsStr(Math.round(f.avg_rating))}</div>
+        <div class="rating-num">${parseFloat(f.avg_rating).toFixed(1)}</div>
+      </div>
+    </div>`).join('');
+}
+
+async function selectFlight(flight, el) {
+  document.querySelectorAll('.flight-row').forEach(r => r.classList.remove('active'));
+  if (el) el.classList.add('active');
+  currentFlight = flight;
+  document.getElementById('hero-input').value = flight;
+  await renderFlightDetail(flight);
+}
+
+async function searchFlight() {
+  const q = document.getElementById('hero-input').value.trim().toUpperCase().replace(/\s/g, '');
+  if (!q) return;
+  currentFlight = q;
+  await renderFlightDetail(q);
+}
+
+async function renderFlightDetail(flight) {
+  const res = await fetch('/api/reviews/' + flight);
+  const data = await res.json();
+  const avg = data.reviews.length ? (data.reviews.reduce((s, r) => s + r.rating, 0) / data.reviews.length).toFixed(1) : null;
+  document.getElementById('right-panel').innerHTML = `
+    <div>
+      <div class="detail-header">
+        <div>
+          <div class="detail-code">${data.flight}</div>
+          <div class="detail-airline">${data.airline}</div>
+        </div>
+        <div style="text-align:right">
+          ${avg ? `<div class="detail-avg">${avg}</div><div class="stars-lg">${starsStr(Math.round(avg))}</div>` : '<div style="color:var(--muted);font-size:13px">No ratings yet</div>'}
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">${data.reviews.length} review${data.reviews.length !== 1 ? 's' : ''}</div>
+        </div>
+      </div>
+      <a class="sky-btn" href="https://www.skyscanner.com/flights/${data.flight}" target="_blank">Search flights on Skyscanner</a>
+      <button class="add-review-btn" onclick="showReviewForm('${data.flight}')"><i class="ti ti-edit"></i> Add your review</button>
+      <div id="form-area"></div>
+      <div class="section-label">${data.reviews.length ? 'Reviews' : 'No reviews yet'}</div>
+      ${data.reviews.map(r => `
+        <div class="review-card">
+          <div class="review-meta">
+            <span class="stars-sm">${starsStr(r.rating)}</span>
+            <span style="font-size:12px;color:var(--muted)">${new Date(r.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span>
+          </div>
+          ${r.comment ? `<div class="review-comment">${r.comment}</div>` : ''}
+          ${r.tags && JSON.parse(r.tags).length ? `<div class="review-tags">${JSON.parse(r.tags).map(t => `<span class="review-tag">${t}</span>`).join('')}</div>` : ''}
+        </div>`).join('')}
+    </div>`;
+}
+
+function showReviewForm(flight) {
+  if (flight) currentFlight = flight;
+  if (!currentFlight) { alert('Search for a flight first.'); return; }
+  selectedRating = 0; selectedTags = [];
+  document.getElementById('form-area').innerHTML = `
+    <div class="form-card">
+      <div class="section-label" style="margin-bottom:14px">Your review — ${currentFlight}</div>
+      <div id="msg" class="msg"></div>
+      <div class="form-group">
+        <label class="form-label">Rating</label>
+        <div>${[1,2,3,4,5].map(i => `<span class="star-inp" onclick="setRating(${i})" id="si${i}">★</span>`).join('')}</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tags</label>
+        <div class="tags-wrap">${TAGS.map(t => `<span class="tag-opt" onclick="toggleTag(this,'${t}')">${t}</span>`).join('')}</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Comment (optional)</label>
+        <textarea id="rev-comment" placeholder="What was your experience like?"></textarea>
+      </div>
+      <button class="submit-btn" onclick="submitReview()">Submit review</button>
+    </div>`;
+}
+
+function setRating(r) {
+  selectedRating = r;
+  [1,2,3,4,5].forEach(i => document.getElementById('si'+i).classList.toggle('filled', i <= r));
+}
+
+function toggleTag(el, tag) {
+  el.classList.toggle('selected');
+  selectedTags = el.classList.contains('selected') ? [...selectedTags, tag] : selectedTags.filter(t => t !== tag);
+}
+
+async function submitReview() {
+  const comment = document.getElementById('rev-comment').value.trim();
+  const msg = document.getElementById('msg');
+  if (!selectedRating) { msg.className = 'msg error'; msg.textContent = 'Please select a rating.'; return; }
+  const res = await fetch('/api/reviews', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({flight_number: currentFlight, rating: selectedRating, comment, tags: selectedTags})
+  });
+  if (res.ok) {
+    msg.className = 'msg success'; msg.textContent = 'Review submitted!';
+    setTimeout(() => { renderFlightDetail(currentFlight); loadFlightList(); loadStats(); }, 1200);
+  } else { msg.className = 'msg error'; msg.textContent = 'Something went wrong. Try again.'; }
+}
+
+async function loadExploreFeed() {
+  const res = await fetch('/api/feed');
+  const data = await res.json();
+  const el = document.getElementById('explore-feed');
+  const colors = ['av1','av2','av3','av4'];
+  if (!data.length) { el.innerHTML = '<div style="color:var(--muted);font-size:14px;text-align:center;padding:40px 0">No activity yet — check in or write a review!</div>'; return; }
+  el.innerHTML = data.map((item, idx) => {
+    const initials = (item.username || 'AN').substring(0,2).toUpperCase();
+    const av = colors[idx % colors.length];
+    const time = timeAgo(item.created_at);
+    if (item.type === 'checkin') {
+      return `<div class="feed-card">
+        <div class="feed-user"><div class="avatar ${av}">${initials}</div><div><div class="feed-username">${item.username || 'Anonymous'}</div><div class="feed-meta">${time}</div></div></div>
+        <span class="checkin-pill"><i class="ti ti-map-pin" style="font-size:11px"></i> Checked in</span>
+        <div class="flight-badge"><div class="badge-code">${item.flight_number}</div><div class="badge-route">${item.airline}</div></div>
+        <div class="feed-comment" style="color:var(--muted);font-size:13px">Someone just checked into this flight.</div>
+        <div class="card-actions"><button class="card-action"><i class="ti ti-message" style="font-size:14px"></i> Ask them</button><button class="card-action"><i class="ti ti-thumb-up" style="font-size:14px"></i> Cheer them on</button></div>
+      </div>`;
+    } else {
+      const tags = item.tags ? JSON.parse(item.tags) : [];
+      return `<div class="feed-card">
+        <div class="feed-user"><div class="avatar ${av}">${initials}</div><div><div class="feed-username">${item.username || 'Anonymous'}</div><div class="feed-meta">${time}</div></div></div>
+        <div class="flight-badge"><div class="badge-code">${item.flight_number}</div><div class="badge-route">${item.airline}</div></div>
+        <div class="feed-stars">${starsStr(item.rating)}</div>
+        ${item.comment ? `<div class="feed-comment">${item.comment}</div>` : ''}
+        ${tags.length ? `<div class="feed-tags">${tags.map(t => `<span class="feed-tag">${t}</span>`).join('')}</div>` : ''}
+        <div class="card-actions"><button class="card-action"><i class="ti ti-thumb-up" style="font-size:14px"></i> Helpful</button><button class="card-action"><i class="ti ti-message" style="font-size:14px"></i> Comment</button></div>
+      </div>`;
+    }
+  }).join('');
+}
+
+async function loadTopRated() {
+  const res = await fetch('/api/top');
+  const data = await res.json();
+  renderTRResults(data);
+}
+
+async function searchTopRated() {
+  const params = new URLSearchParams({
+    from: document.getElementById('tr-from').value,
+    to: document.getElementById('tr-to').value,
+    airline: document.getElementById('tr-airline').value,
+    region: document.getElementById('tr-region').value
+  });
+  const res = await fetch('/api/top?' + params);
+  const data = await res.json();
+  renderTRResults(data);
+}
+
+async function lookupFlight() {
+  const num = document.getElementById('tr-flightnum').value.trim().toUpperCase().replace(/\s/g,'');
+  const from = document.getElementById('tr-from-code').value.trim().toUpperCase();
+  const to = document.getElementById('tr-to-code').value.trim().toUpperCase();
+  const q = num || (from && to ? from + to : '');
+  if (!q) return;
+  const res = await fetch('/api/top?q=' + q);
+  const data = await res.json();
+  renderTRResults(data);
+}
+
+function renderTRResults(data) {
+  document.getElementById('tr-count').textContent = data.length + ' result' + (data.length !== 1 ? 's' : '');
+  document.getElementById('tr-results').innerHTML = data.length ? data.map((f, i) => `
+    <div class="flight-result" onclick="goHomeAndSelect('${f.flight_number}')">
+      <div class="result-left">
+        <div class="rank">#${i+1}</div>
+        <div><div class="result-code">${f.flight_number}</div><div class="result-sub">${f.airline}</div></div>
+      </div>
+      <div class="result-right">
+        <div class="result-stars">${starsStr(Math.round(f.avg_rating))}</div>
+        <div class="result-rating">${parseFloat(f.avg_rating).toFixed(1)}</div>
+        <div class="result-count">${f.review_count} review${f.review_count !== 1 ? 's' : ''}</div>
+      </div>
+    </div>`).join('') : '<div style="color:var(--muted);font-size:13px;text-align:center;padding:32px 0">No flights found. Try adjusting your search.</div>';
+}
+
+function goHomeAndSelect(flight) {
+  goTo('home');
+  setTimeout(() => selectFlight(flight, null), 100);
+}
+
+loadStats();
+loadFlightList();
+</script>
+</body>
+</html>
