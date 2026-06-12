@@ -1,11 +1,12 @@
-require('dotenv').config();
 const express = require('express');
 const Database = require('better-sqlite3');
-const fetch = require('node-fetch');
 const path = require('path');
 
 const app = express();
-const db = new Database('flew.db');
+const dbPath = process.env.RAILWAY_VOLUME_MOUNT_PATH 
+  ? `${process.env.RAILWAY_VOLUME_MOUNT_PATH}/flew.db`
+  : 'flew.db';
+const db = new Database(dbPath);
 
 app.use(express.json());
 app.use(express.static('public'));
@@ -27,20 +28,6 @@ db.exec(`
     airline TEXT,
     username TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  );
-  CREATE TABLE IF NOT EXISTS flights (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    flight_number TEXT UNIQUE NOT NULL,
-    airline TEXT,
-    departure_airport TEXT,
-    departure_city TEXT,
-    arrival_airport TEXT,
-    arrival_city TEXT,
-    departure_time TEXT,
-    arrival_time TEXT,
-    status TEXT,
-    aircraft TEXT,
-    fetched_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 `);
 
@@ -70,91 +57,6 @@ function getAirline(flightNumber) {
   const code = flightNumber.replace(/[^A-Z]/g, '').substring(0, 2);
   return airlines[code] || 'Unknown Airline';
 }
-
-// Fetch flight from AviationStack and cache in DB
-async function fetchFlightFromAPI(flightNumber) {
-  const apiKey = process.env.AVIATIONSTACK_KEY;
-  if (!apiKey) return null;
-
-  try {
-    const url = `http://api.aviationstack.com/v1/flights?access_key=${apiKey}&flight_iata=${flightNumber}&limit=1`;
-    const response = await fetch(url);
-    const data = await response.json();
-
-    if (!data.data || data.data.length === 0) return null;
-
-    const f = data.data[0];
-    const flightData = {
-      flight_number: flightNumber,
-      airline: f.airline?.name || getAirline(flightNumber),
-      departure_airport: f.departure?.iata || null,
-      departure_city: f.departure?.airport || null,
-      arrival_airport: f.arrival?.iata || null,
-      arrival_city: f.arrival?.airport || null,
-      departure_time: f.departure?.scheduled || null,
-      arrival_time: f.arrival?.scheduled || null,
-      status: f.flight_status || null,
-      aircraft: f.aircraft?.iata || null
-    };
-
-    // Cache in DB (insert or replace)
-    db.prepare(`
-      INSERT INTO flights (flight_number, airline, departure_airport, departure_city, arrival_airport, arrival_city, departure_time, arrival_time, status, aircraft, fetched_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-      ON CONFLICT(flight_number) DO UPDATE SET
-        airline=excluded.airline,
-        departure_airport=excluded.departure_airport,
-        departure_city=excluded.departure_city,
-        arrival_airport=excluded.arrival_airport,
-        arrival_city=excluded.arrival_city,
-        departure_time=excluded.departure_time,
-        arrival_time=excluded.arrival_time,
-        status=excluded.status,
-        aircraft=excluded.aircraft,
-        fetched_at=CURRENT_TIMESTAMP
-    `).run(
-      flightData.flight_number, flightData.airline,
-      flightData.departure_airport, flightData.departure_city,
-      flightData.arrival_airport, flightData.arrival_city,
-      flightData.departure_time, flightData.arrival_time,
-      flightData.status, flightData.aircraft
-    );
-
-    return flightData;
-  } catch (err) {
-    console.error('AviationStack error:', err.message);
-    return null;
-  }
-}
-
-// GET /api/flight/:flightNumber — check DB first, then API
-app.get('/api/flight/:flightNumber', async (req, res) => {
-  const flightNumber = req.params.flightNumber.toUpperCase().replace(/\s/g, '');
-
-  // Check DB cache first (only re-fetch if older than 1 hour)
-  const cached = db.prepare(`
-    SELECT * FROM flights WHERE flight_number = ?
-    AND fetched_at > datetime('now', '-1 hour')
-  `).get(flightNumber);
-
-  if (cached) {
-    const reviews = db.prepare('SELECT * FROM reviews WHERE UPPER(flight_number) = ? ORDER BY created_at DESC').all(flightNumber);
-    return res.json({ ...cached, reviews, source: 'cache' });
-  }
-
-  // Not cached — hit AviationStack
-  const flightData = await fetchFlightFromAPI(flightNumber);
-
-  if (!flightData) {
-    // Fall back to just airline lookup from our map
-    const airline = getAirline(flightNumber);
-    const reviews = db.prepare('SELECT * FROM reviews WHERE UPPER(flight_number) = ? ORDER BY created_at DESC').all(flightNumber);
-    return res.json({ flight_number: flightNumber, airline, reviews, source: 'local' });
-  }
-
-  const reviews = db.prepare('SELECT * FROM reviews WHERE UPPER(flight_number) = ? ORDER BY created_at DESC').all(flightNumber);
-  res.json({ ...flightData, reviews, source: 'api' });
-});
 
 app.get('/api/stats', (req, res) => {
   const reviews = db.prepare('SELECT COUNT(*) as count FROM reviews').get().count;
@@ -206,6 +108,13 @@ app.get('/api/top', (req, res) => {
   sql += ' GROUP BY flight_number ORDER BY avg_rating DESC, review_count DESC LIMIT 20';
   const results = db.prepare(sql).all(...params);
   res.json(results);
+});
+
+app.delete('/api/reviews/:id', (req, res) => {
+  const { id } = req.params;
+  const result = db.prepare('DELETE FROM reviews WHERE id = ?').run(id);
+  if (result.changes === 0) return res.status(404).json({ error: 'Review not found' });
+  res.json({ success: true });
 });
 
 const PORT = process.env.PORT || 3000;
