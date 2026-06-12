@@ -1,0 +1,8 @@
+{
+  "appId": "com.belleproduct.flew",
+  "appName": "flew",
+  "webDir": "public",
+  "ios": {
+    "minVersion": "13.0"
+  }
+}
